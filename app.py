@@ -7,14 +7,20 @@ from tensorflow.keras.models import load_model
 import os
 import requests
 from tqdm import tqdm
+import json
 
 # Load the pre-trained model
 model_path = "best_audio_model.keras"
 model = load_model(model_path)
 
 # Set Kaggle credentials for GitHub usage
-os.environ['KAGGLE_USERNAME'] = 'ebenezerds'
-os.environ['KAGGLE_KEY'] = os.path.expanduser("~/.kaggle/kaggle.json")
+os.environ['KAGGLE_USERNAME'] = os.getenv("KAGGLE_USERNAME")
+os.environ['KAGGLE_KEY'] = os.getenv("KAGGLE_KEY")
+
+# Ensure the temp directory exists before saving the file
+temp_dir = './temp'
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
 
 # Function to download the dataset
 def download_kaggle_dataset(dataset_name, save_path):
@@ -23,7 +29,6 @@ def download_kaggle_dataset(dataset_name, save_path):
     url = f"https://www.kaggle.com/api/v1/datasets/download/{dataset_name}"
     kaggle_api_token_path = os.path.expanduser("~/.kaggle/kaggle.json")
     with open(kaggle_api_token_path, "r") as f:
-        import json
         kaggle_credentials = json.load(f)
     auth = (kaggle_credentials["username"], kaggle_credentials["key"])
     response = requests.get(url, stream=True, auth=auth)
@@ -62,7 +67,7 @@ if st.sidebar.button("Download Dataset"):
 # File upload
 uploaded_file = st.file_uploader("Upload an audio file", type=["wav", "mp3"])
 if uploaded_file:
-    file_path = f"./temp/{uploaded_file.name}"
+    file_path = f"{temp_dir}/{uploaded_file.name}"
     with open(file_path, "wb") as f:
         f.write(uploaded_file.read())
     st.audio(file_path, format="audio/wav")
