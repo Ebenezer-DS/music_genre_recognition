@@ -9,6 +9,14 @@ import random
 import sounddevice as sd
 import scipy.io.wavfile as wav
 
+# Handle PortAudio library error for sounddevice
+try:
+    import sounddevice as sd
+    SOUNDDEVICE_AVAILABLE = True
+except OSError as e:
+    st.warning("⚠️ PortAudio library not found. Audio recording functionality will be disabled.")
+    SOUNDDEVICE_AVAILABLE = False
+
 # Load the pre-trained model
 model_path = "best_audio_model.keras"
 model = load_model(model_path)
@@ -36,6 +44,9 @@ def preprocess_audio(file_path):
 
 # Record audio function
 def record_audio(duration=5, samplerate=22050):
+    if not SOUNDDEVICE_AVAILABLE:
+        st.error("Audio recording is not available. Please ensure PortAudio is installed.")
+        return None
     try:
         st.write("Recording...")
         audio = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=1, dtype='int16')
@@ -47,6 +58,7 @@ def record_audio(duration=5, samplerate=22050):
     except Exception as e:
         st.error(f"Error during recording: {e}")
         return None
+
 
 # Ensure directories exist
 def ensure_directory(path):
