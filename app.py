@@ -6,16 +6,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 import os
 import random
-import sounddevice as sd
 import scipy.io.wavfile as wav
-
-# Handle PortAudio library error for sounddevice
-try:
-    import sounddevice as sd
-    SOUNDDEVICE_AVAILABLE = True
-except OSError as e:
-    st.warning("⚠️ PortAudio library not found. Audio recording functionality will be disabled.")
-    SOUNDDEVICE_AVAILABLE = False
 
 # Load the pre-trained model
 model_path = "best_audio_model.keras"
@@ -39,24 +30,6 @@ def preprocess_audio(file_path):
         return mfcc
     except Exception as e:
         st.error(f"Error during preprocessing: {e}")
-        return None
-
-
-# Record audio function
-def record_audio(duration=5, samplerate=22050):
-    if not SOUNDDEVICE_AVAILABLE:
-        st.error("Audio recording is not available. Please ensure PortAudio is installed.")
-        return None
-    try:
-        st.write("Recording...")
-        audio = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=1, dtype='int16')
-        sd.wait()
-        file_path = "temp_recording.wav"
-        wav.write(file_path, samplerate, audio)
-        st.write("Recording complete.")
-        return file_path
-    except Exception as e:
-        st.error(f"Error during recording: {e}")
         return None
 
 
